@@ -1,0 +1,171 @@
+1.user_management Tables
+CREATE TABLE roles (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_id INT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    contact_number VARCHAR(20),
+    address TEXT,
+    profile_picture_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id)
+);
+
+CREATE TABLE user_auth_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    login_time DATETIME,
+    logout_time DATETIME,
+    ip_address VARCHAR(45),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+
+
+2. attendance Tables
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    date DATE NOT NULL,
+    status ENUM('Present', 'Absent', 'Leave', 'Holiday') NOT NULL,
+    check_in TIME,
+    check_out TIME,
+    remarks TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE leave_requests (
+    leave_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    leave_type ENUM('Sick', 'Casual', 'Earned', 'Medical', 'Other') NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    reason TEXT,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+3.finance Tables
+CREATE TABLE fee_structures (
+    fee_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),
+    amount DECIMAL(10,2),
+    frequency ENUM('Monthly', 'Yearly', 'OneTime'),
+    fee_type ENUM('Tuition', 'Transport', 'Library', 'Hostel', 'Misc')
+);
+
+CREATE TABLE user_fees (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    fee_id INT,
+    due_date DATE,
+    paid_date DATE,
+    amount_paid DECIMAL(10,2),
+    status ENUM('Paid', 'Unpaid', 'Partial') DEFAULT 'Unpaid',
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (fee_id) REFERENCES fee_structures(fee_id)
+);
+
+CREATE TABLE payroll (
+    payroll_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    month VARCHAR(10),
+    year INT,
+    basic_salary DECIMAL(10,2),
+    bonus DECIMAL(10,2),
+    deductions DECIMAL(10,2),
+    net_salary DECIMAL(10,2),
+    payment_date DATE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+
+4. academic Tables
+CREATE TABLE classes (
+    class_id INT AUTO_INCREMENT PRIMARY KEY,
+    class_name VARCHAR(50),
+    section VARCHAR(10)
+);
+
+CREATE TABLE subjects (
+    subject_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    class_id INT,
+    assigned_teacher_id INT,
+    FOREIGN KEY (class_id) REFERENCES classes(class_id),
+    FOREIGN KEY (assigned_teacher_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE timetables (
+    timetable_id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT,
+    subject_id INT,
+    day_of_week ENUM('Mon','Tue','Wed','Thu','Fri','Sat'),
+    start_time TIME,
+    end_time TIME,
+    FOREIGN KEY (class_id) REFERENCES classes(class_id),
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
+);
+
+CREATE TABLE exams (
+    exam_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    class_id INT,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (class_id) REFERENCES classes(class_id)
+);
+
+CREATE TABLE grades (
+    grade_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    exam_id INT,
+    subject_id INT,
+    marks_obtained DECIMAL(5,2),
+    remarks TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (exam_id) REFERENCES exams(exam_id),
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
+);
+
+
+5. notification_communication Tables
+CREATE TABLE notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    message TEXT,
+    sent_to_role_id INT,
+    sent_to_user_id INT,
+    delivery_method ENUM('Email', 'SMS', 'In-App'),
+    status ENUM('Sent', 'Failed'),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sent_to_role_id) REFERENCES roles(role_id),
+    FOREIGN KEY (sent_to_user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT,
+    receiver_id INT,
+    message TEXT,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(user_id),
+    FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+);
+
+echo "# School_ERP" >> README.md
+git init
+git add README.md
+git commit -m "Started Project School ERP 1st commit"
+git branch -M main
+git remote add origin https://github.com/Yrajaram112/School_ERP.git
+git push -u origin main
